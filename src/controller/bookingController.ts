@@ -238,8 +238,42 @@ class bookingService {
                 res.status(404).json({ message: "User not found." });
                 return
             }
+            const cartResponse=await findOne("Cart",{userId})
+            const cart = cartResponse?.data
+            if (!cart||cart.items.length===0) {
+                res.status(404).json({ message: "Cart not found.or cart is empty." });
+                return
+            }
             let totalAmount=0
-        } catch (error:any) {
+            for (const item of cart.items) {
+                const productResponse=await findOne("Product",{productId:item.productId})
+                const product = productResponse?.data
+                if (!product) {
+                    res.status(404).json({ message: `Product not found. ${item.productId}` });
+                    return
+                }
+            totalAmount+=item.quantity*product.price
+            }
+
+            const orderResponse=await create("order",{
+                userId,
+                address,
+                totalAmount,
+                items:cart.items,
+                status:"order placed successfully"
+            })
+            console.log(orderResponse);
+            
+            const order=orderResponse?.data
+            if (!orderResponse) {
+                res.status(500).json({ message: "An error occurred while placing order." });
+                return
+            }
+            await updateOne("Cart",{userId},{items:[]})
+            res.status(200).json({message:"order placed successfully",order})
+            } catch (error:any) {
+                console.error("Error in placeOrder:",error.message||error)
+                res.status(500).json({ message: "An error occurred while placing order." });
             
         }
     }
