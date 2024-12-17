@@ -1,20 +1,21 @@
 import controllerService from "../utils/connectors";
 import { Request, Response } from "express";
-const connectors=new controllerService()
+const connectors = new controllerService()
 let { aggregate } = connectors
 
-interface reqBody{
-    categoryId:string,
-    category:string
+interface reqBody {
+    categoryId: string,
+    category: string
 }
 
-class catService{
-    async  showAllCat(req: Request<{},{},reqBody>, res: Response): Promise<void> {
+class catService {
+    async showAllCat(req: Request, res: Response): Promise<void> {
         try {
-            const { categoryId } = req.body
+            let data: reqBody = req.body
+
             const agg = [
                 {
-                    $match: { categoryId: categoryId }
+                    $match: { categoryId: data.categoryId }
                 },
                 {
                     $lookup: {
@@ -50,18 +51,20 @@ class catService{
             if (!categories || categories.length === 0) {
                 res.status(404).json({ message: "No categories found." });
             }
-            res.status(200).json({categories})
+            res.status(200).json({ categories })
         } catch (error: any) {
             console.error(error)
-            res.status(500).json({message:"Error finding categories"})
+            res.status(500).json({ message: "Error finding categories" })
         }
     }
-    async showAllProduct(req:Request<{},{},reqBody>,res:Response):Promise<void>{
+    async showAllProduct(req: Request, res: Response): Promise<void> {
         try {
-            const {category}=req.body
-            const agg=[
+            let data: reqBody = req.body
+
+
+            const agg = [
                 {
-                    $match: { category: category }
+                    $match: { category: data.category }
                 },
                 {
                     $lookup: {
@@ -88,14 +91,14 @@ class catService{
                         categoryId: "$category.categoryId",
                     }
                 }
-    
+
             ]
-            const response =await aggregate("Product",agg)
-            res.status(200).json({response})
-        } catch (error:any) {
+            const response = await aggregate("Product", agg)
+            res.status(200).json({ response })
+        } catch (error: any) {
             console.error(error)
-            res.status(500).json({message:"Error finding products"})
-            
+            res.status(500).json({ message: "Error finding products" })
+
         }
     }
 }
