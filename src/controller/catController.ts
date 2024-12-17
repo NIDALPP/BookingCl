@@ -1,15 +1,15 @@
-import { controllerService } from "../utils/connectors";
+import controllerService from "../utils/connectors";
 import { Request, Response } from "express";
-
-let { aggregate } = controllerService
+const connectors=new controllerService()
+let { aggregate } = connectors
 
 interface reqBody{
     categoryId:string,
     category:string
 }
 
-export const catService = {
-    showAllCat: async (req: Request<{},{},reqBody>, res: Response): Promise<void> => {
+class catService{
+    async  showAllCat(req: Request<{},{},reqBody>, res: Response): Promise<void> {
         try {
             const { categoryId } = req.body
             const agg = [
@@ -55,8 +55,8 @@ export const catService = {
             console.error(error)
             res.status(500).json({message:"Error finding categories"})
         }
-    },
-    showAllProduct:async(req:Request<{},{},reqBody>,res:Response):Promise<void>=>{
+    }
+    async showAllProduct(req:Request<{},{},reqBody>,res:Response):Promise<void>{
         try {
             const {category}=req.body
             const agg=[
@@ -99,3 +99,4 @@ export const catService = {
         }
     }
 }
+export default catService
